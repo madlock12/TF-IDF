@@ -10,17 +10,8 @@ import os
 from keras.preprocessing.text import text_to_word_sequence
 from nltk.stem import WordNetLemmatizer
 
-def tokenize_remove_stopwords(data):  # create tokens and remove stop words and lemmatize
-    f = open("Stopword-List.txt", 'r')
-    if(f):
-        temp = (f.read())
-        f.close()
-        stopwords = text_to_word_sequence(temp)
-    else:
-        print("Stop Word file does not exist")
-
+def tokenize_remove_stopwords(data,stopwords):  # create tokens and remove stop words and lemmatize
     retreaved = text_to_word_sequence(data)  # tokenize text file
-
     for i in range(len(stopwords)):
         if(stopwords[i] in retreaved):  # if specific stopwords is in token
             retreaved.remove(stopwords[i])  # removing stop words
@@ -30,14 +21,15 @@ def tokenize_remove_stopwords(data):  # create tokens and remove stop words and 
     return retreaved
 
 
-def newfile():  # this function will create index and store it in the index.txt file
+def newfile(stopwords):  # this function will create index and store it in the index.txt file
     for docno in range(1, 2):
         ff = open("./Abstracts/Abstracts/"+str(docno) +
                   ".txt", "r")  # reading all 448 files
         if(ff):
             data = (ff.read())
             ff.close()
-            retreaved = tokenize_remove_stopwords(data)#now we will get a list with stopword removed+lemmatized
+            retreaved = tokenize_remove_stopwords(data,stopwords)#now we will get a list with stopword removed+lemmatized
+            print(retreaved)
             
     # f = open("index.txt", "w")#here we will store all indexes
 
@@ -48,7 +40,14 @@ file = open("index.txt", "r")
 if(file):  # if file exist
     filesize = os.path.getsize("index.txt")
     if(filesize == 0):  # file is empty hence we have to create index and store
-        newfile()
+        f = open("Stopword-List.txt", 'r')
+        if(f):
+            temp = (f.read())
+            f.close()
+            stopwords = text_to_word_sequence(temp)
+        else:
+            print("Stop Word file does not exist")
+        newfile(stopwords)
 else:  # if file does not exist
     newfile()
 
