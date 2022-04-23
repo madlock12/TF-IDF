@@ -30,7 +30,7 @@ def newfile(stopwords):  # this function will create index and store it in the i
             ff.close()
             retreaved = tokenize_remove_stopwords(data,stopwords)#now we will get a list with stopword removed+lemmatized
             print(retreaved)
-            
+
     # f = open("index.txt", "w")#here we will store all indexes
 
     # f.close()
@@ -49,7 +49,14 @@ if(file):  # if file exist
             print("Stop Word file does not exist")
         newfile(stopwords)
 else:  # if file does not exist
-    newfile()
+    f = open("Stopword-List.txt", 'r')
+    if(f):
+        temp = (f.read())
+        f.close()
+        stopwords = text_to_word_sequence(temp)
+    else:
+        print("Stop Word file does not exist")
+    newfile(stopwords)
 
 f = open("index.txt", "r")
 if(f):
