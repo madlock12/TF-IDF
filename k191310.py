@@ -30,9 +30,14 @@ def tokenize_remove_stopwords(data, stopwords):
 def populate_index(vector, stopwords):
     index = dict()
     for i in vector:
-        index.setdefault(i, [0])
+        index.setdefault(i,{})
+        index[i].setdefault("TF",[0])
+        index[i].setdefault("DocumentFreq",0)
+        index[i].setdefault("IDF",0)
+        index[i].setdefault("TF*IDF",[0])
         for j in range(448):
-            index[i].append(0)
+            index[i]["TF"].append(0)
+            index[i]["TF*IDF"].append(0)
 
     for docno in range(1, 449):
         f = open("./Abstracts/Abstracts/"+str(docno) +
@@ -43,7 +48,7 @@ def populate_index(vector, stopwords):
             data = tokenize_remove_stopwords(data, stopwords)
 
             for i in data:
-                index[i][docno-1] += 1
+                index[i]["TF"][docno-1] += 1
         else:
             print("File failed to open")
     print(index)
