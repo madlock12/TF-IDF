@@ -15,7 +15,7 @@ import string
 # create tokens and remove stop words and lemmatize
 def tokenize_remove_stopwords(data, stopwords):
     for character in string.punctuation:
-        data.replace(character, "")
+        data.replace(character," ")
 
     retreaved = text_to_word_sequence(data)  # tokenize text file
     for i in range(len(stopwords)):
@@ -27,15 +27,25 @@ def tokenize_remove_stopwords(data, stopwords):
     return retreaved
 
 
-def populate_index(vector):
+def populate_index(vector,stopwords):
     index = dict()
+    for i in vector:
+        index.setdefault(i,[0])
+        for j in range(448):
+            index[i].append(0)
+
     for docno in range(1, 449):
         f = open("./Abstracts/Abstracts/"+str(docno) +
                  ".txt", "r")  # reading all 448 files
         if(f):
             data = (f.read())
             f.close()
-
+            data=tokenize_remove_stopwords(data,stopwords)
+            
+            for i in vector:
+                if(i in data):
+                    index[i][docno]+=1
+    print(index)
 
 def newfile(stopwords):  # this function will create index and store it in the index.txt file
     vector = []
@@ -52,7 +62,7 @@ def newfile(stopwords):  # this function will create index and store it in the i
                     vector.append(i)
     print(vector)
     print(len(vector))
-    populate_index(vector)
+    populate_index(vector,stopwords)
     # f = open("index.txt", "w")#here we will store all indexes
 
     # f.close()
