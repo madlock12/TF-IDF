@@ -47,6 +47,7 @@ def populate_index(vector, stopwords):
         else:
             print("File failed to open")
     print(index)
+    return (index)
 
 
 def newfile(stopwords):  # this function will create index and store it in the index.txt file
@@ -64,11 +65,10 @@ def newfile(stopwords):  # this function will create index and store it in the i
                     vector.append(i)
     print(vector)
     print(len(vector))
-    populate_index(vector, stopwords)
+    index=populate_index(vector, stopwords)
     # f = open("index.txt", "w")#here we will store all indexes
 
     # f.close()
-
 
 file = open("index.txt", "r")
 if(file):  # if file exist
