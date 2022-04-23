@@ -6,6 +6,7 @@
 #                                   Mir Mubashir Ali
 #                                       4/23/2022
 ############################################################################################################
+from multiprocessing.sharedctypes import Value
 import os
 from keras.preprocessing.text import text_to_word_sequence
 from nltk.stem import WordNetLemmatizer
@@ -51,6 +52,14 @@ def populate_index(vector, stopwords):
                 index[i]["TF"][docno-1] += 1
         else:
             print("File failed to open")
+    
+    DF=0
+    for i in vector:
+        for docno in range(448):
+            if(index[i]["TF"]!=0):
+                DF+=1
+        index[i]["DocumentFreq"]=DF
+    
     print(index)
     return (index)
 
