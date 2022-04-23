@@ -22,15 +22,19 @@ def tokenize_remove_stopwords(data,stopwords):  # create tokens and remove stop 
 
 
 def newfile(stopwords):  # this function will create index and store it in the index.txt file
-    for docno in range(1, 2):
+    vector=[]
+    for docno in range(1, 449):
         ff = open("./Abstracts/Abstracts/"+str(docno) +
                   ".txt", "r")  # reading all 448 files
         if(ff):
             data = (ff.read())
             ff.close()
             retreaved = tokenize_remove_stopwords(data,stopwords)#now we will get a list with stopword removed+lemmatized
-            print(retreaved)
-
+            for i in retreaved:
+                if(i not in vector):
+                    vector.append(i)
+    print (vector)
+    print (len(vector))
     # f = open("index.txt", "w")#here we will store all indexes
 
     # f.close()
