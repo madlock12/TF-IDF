@@ -42,10 +42,10 @@ def populate_index(vector, stopwords):
     # initializing the main index vector that will be storing VSM including (Tf,IDF,Documentfreq,TF*IDF)
     for i in vector:
         index.setdefault(i, {})
-        index[i].setdefault("TF", [0])
+        index[i].setdefault("TF", [])
         index[i].setdefault("DocumentFreq", 0)
         index[i].setdefault("IDF", 0)
-        index[i].setdefault("TF*IDF", [0])
+        index[i].setdefault("TF*IDF", [])
         for j in range(448):
             index[i]["TF"].append(0)
             index[i]["TF*IDF"].append(0)
@@ -100,6 +100,14 @@ def newfile(stopwords):  # this function will create index and store it in the i
 
     with open('index.json', 'w') as cf:
         json.dump(index, cf, indent=4)
+
+def Mag(vec):#this is a utility function to calculate magnitude and return
+    temp=np.array(vec)
+    mag=np.linalg.norm(temp)
+    return mag
+
+def dotproduct(vec1,vec2):
+    
 
 
 file = exists("index.json")
@@ -162,6 +170,18 @@ for i in query:
 
 for i in query:
     queryvec[vector.index(i)]=queryindex[i]["TF*IDF"]
-print(queryvec)
+# print(queryvec)
 
 # make a vector for each document now 
+
+docvec={}
+for i in range(448):
+    docvec.setdefault(i,[])
+    for j in range(len(vector)):
+        docvec[i].append(0)
+print("Length of vector is: ",len(vector))
+for i in range(448):
+    loc=0
+    for j in vector:
+        docvec[i][loc]=index[j]["TF*IDF"][i]
+        loc+=1
