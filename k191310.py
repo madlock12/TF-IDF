@@ -11,7 +11,7 @@ import os
 from keras.preprocessing.text import text_to_word_sequence
 from nltk.stem import WordNetLemmatizer
 import string
-
+import numpy as np
 
 # create tokens and remove stop words and lemmatize
 def tokenize_remove_stopwords(data, stopwords):
@@ -30,12 +30,13 @@ def tokenize_remove_stopwords(data, stopwords):
 
 def populate_index(vector, stopwords):
     index = dict()
+    # initializing the main index vector that will be storing VSM including (Tf,IDF,Documentfreq,TF*IDF)
     for i in vector:
-        index.setdefault(i,{})
-        index[i].setdefault("TF",[0])
-        index[i].setdefault("DocumentFreq",0)
-        index[i].setdefault("IDF",0)
-        index[i].setdefault("TF*IDF",[0])
+        index.setdefault(i, {})
+        index[i].setdefault("TF", [0])
+        index[i].setdefault("DocumentFreq", 0)
+        index[i].setdefault("IDF", 0)
+        index[i].setdefault("TF*IDF", [0])
         for j in range(448):
             index[i]["TF"].append(0)
             index[i]["TF*IDF"].append(0)
@@ -52,13 +53,22 @@ def populate_index(vector, stopwords):
                 index[i]["TF"][docno-1] += 1
         else:
             print("File failed to open")
-    
-    DF=0
+
+    DF = 0
     for i in vector:
-        for docno in range(448):
-            if(index[i]["TF"]!=0):
-                DF+=1
-        index[i]["DocumentFreq"]=DF
+        for docno in range(448): #counting document freq and IDF
+            if(index[i]["TF"][docno] != 0):
+                DF += 1
+        index[i]["DocumentFreq"] = DF
+        DF=0
+        index[i]["IDF"] = np.log10(448/index[i]["DocumentFreq"])  # log(df/N)
+        
+        for docno in range(448):#calculating TF*IDF simultaionsly to reduce running cost
+            if(index[i]["TF"][docno] != 0):
+                index[i]["TF*IDF"][docno]=index[i]["TF"][docno]*index[i]["IDF"]
+            else:
+                index[i]["TF*IDF"][docno]=0
+    
     
     print(index)
     return (index)
@@ -79,10 +89,11 @@ def newfile(stopwords):  # this function will create index and store it in the i
                     vector.append(i)
     print(vector)
     print(len(vector))
-    index=populate_index(vector, stopwords)
+    index = populate_index(vector, stopwords)
     # f = open("index.txt", "w")#here we will store all indexes
 
     # f.close()
+
 
 file = open("index.txt", "r")
 if(file):  # if file exist
