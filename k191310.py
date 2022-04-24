@@ -8,6 +8,7 @@
 ############################################################################################################
 from multiprocessing.sharedctypes import Value
 import os
+from this import s
 from keras.preprocessing.text import text_to_word_sequence
 from nltk.stem import WordNetLemmatizer
 import string
@@ -124,5 +125,29 @@ with open("index.json", "r") as read_file:
     index = json.load(read_file)
 print(index)
 
+
+f = open("Stopword-List.txt", 'r')
+if(f):
+    temp = (f.read())
+    f.close()
+    stopwords = text_to_word_sequence(temp)
+    del temp
+
 query=input("Enter Query: ")
-queryvec=[]
+vector=list(index.keys())
+queryvec={}
+for i in (vector):
+    queryvec.setdefault(i,{})
+    queryvec[i].setdefault("TF",[0])
+    queryvec[i].setdefault("TF*IDF",[0])
+    for i in range(448):
+        queryvec[i]["TF"].append(0)
+        queryvec[i]["TF*IDF"].append(0)
+
+query=tokenize_remove_stopwords(query,stopwords)
+
+for i in query:
+    queryvec[i]["TF"]+=1 #this will calculate query term freq
+
+queryvec[i]
+print (queryvec)
