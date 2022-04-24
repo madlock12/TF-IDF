@@ -15,12 +15,17 @@ import string
 import numpy as np
 import json
 from os.path import exists
+
 # create tokens and remove stop words and lemmatize
 
 
-def tokenize_remove_stopwords(data, stopwords): #____________________________use re____________________________
+# ____________________________use re____________________________
+def tokenize_remove_stopwords(data, stopwords):
     for character in string.punctuation:
         data.replace(character, '')
+        data.replace("'",'')
+        data.replace("/",'')
+        data.replace("\\",'')
 
     retreaved = text_to_word_sequence(data)  # tokenize text file
     for i in range(len(stopwords)):
@@ -88,13 +93,13 @@ def newfile(stopwords):  # this function will create index and store it in the i
             retreaved = tokenize_remove_stopwords(data, stopwords)
             for i in retreaved:
                 if(i not in vector):
-                    vector.append(i)    
+                    vector.append(i)
 
-    print("Number of unique terms: ",len(vector))
+    print("Number of unique terms: ", len(vector))
     index = populate_index(vector, stopwords)
 
     with open('index.json', 'w') as cf:
-        json.dump(index,cf,indent=4)
+        json.dump(index, cf, indent=4)
 
 
 file = exists("index.json")
@@ -133,21 +138,30 @@ if(f):
     stopwords = text_to_word_sequence(temp)
     del temp
 
-query=input("Enter Query: ")
-vector=list(index.keys())
-queryvec={}
-for i in (vector):
-    queryvec.setdefault(i,{})
-    queryvec[i].setdefault("TF",[0])
-    queryvec[i].setdefault("TF*IDF",[0])
-    for i in range(448):
-        queryvec[i]["TF"].append(0)
-        queryvec[i]["TF*IDF"].append(0)
+query = input("Enter Query: ")
+vector = list(index.keys())
+queryindex = {}
+queryvec=[]
+for i in range(len(vector)):
+    queryvec.append(0)
 
-query=tokenize_remove_stopwords(query,stopwords)
+for i in (vector):
+    queryindex.setdefault(i, {})
+    queryindex[i].setdefault("TF", 0)
+    queryindex[i].setdefault("TF*IDF", 0)
+
+query = tokenize_remove_stopwords(query, stopwords)
 
 for i in query:
-    queryvec[i]["TF"]+=1 #this will calculate query term freq
+    queryindex[i]["TF"] += 1  # this will calculate query term freq
 
-queryvec[i]
-print (queryvec)
+for i in query:
+    # this will create a basic vector on which we will apply cos similarity
+    queryindex[i]["TF*IDF"] = queryindex[i]["TF"]*index[i]["IDF"]
+# print(queryindex)
+
+for i in query:
+    queryvec[vector.index(i)]=queryindex[i]["TF*IDF"]
+print(queryvec)
+
+# make a vector for each document now 
