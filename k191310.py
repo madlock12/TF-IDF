@@ -23,9 +23,9 @@ from os.path import exists
 def tokenize_remove_stopwords(data, stopwords):
     for character in string.punctuation:
         data.replace(character, '')
-        data.replace("'",'')
-        data.replace("/",'')
-        data.replace("\\",'')
+        data.replace("'", '')
+        data.replace("/", '')
+        data.replace("\\", '')
 
     retreaved = text_to_word_sequence(data)  # tokenize text file
     for i in range(len(stopwords)):
@@ -101,14 +101,35 @@ def newfile(stopwords):  # this function will create index and store it in the i
     with open('index.json', 'w') as cf:
         json.dump(index, cf, indent=4)
 
-def Mag(vec):#this is a utility function to calculate magnitude and return
-    temp=np.array(vec)
-    mag=np.linalg.norm(temp)
+
+def Mag(vec):  # this is a utility function to calculate magnitude and return
+    temp = np.array(vec)
+    mag = np.linalg.norm(temp)
     return mag
 
-def dotproduct(vec1,vec2):
-    
 
+def dotproduct(vec1, vec2):
+    temp1 = np.array(vec1)
+    temp2 = np.array(vec2)
+    dotp = np.dot(temp1, temp2)
+    return dotp
+
+
+def calrank(dv, qv):
+    rank = []
+    mq = Mag(qv)
+    md = 0
+    if(mq != 0):
+        for i in range(448):
+            md = Mag(dv[i])
+            temp = ((dotproduct(dv[i], qv)) / (md*mq))
+            if(temp>=0.05):
+                rank.append(i+1)
+    else:
+        print("No such term exist!!!")
+    
+    rank.sort(reverse=True)
+    return rank
 
 file = exists("index.json")
 if(file):  # if file exist
@@ -149,7 +170,7 @@ if(f):
 query = input("Enter Query: ")
 vector = list(index.keys())
 queryindex = {}
-queryvec=[]
+queryvec = []
 for i in range(len(vector)):
     queryvec.append(0)
 
@@ -169,19 +190,20 @@ for i in query:
 # print(queryindex)
 
 for i in query:
-    queryvec[vector.index(i)]=queryindex[i]["TF*IDF"]
+    queryvec[vector.index(i)] = queryindex[i]["TF*IDF"]
 # print(queryvec)
 
-# make a vector for each document now 
-
-docvec={}
+# make a vector for each document now
+docvec = {}
 for i in range(448):
-    docvec.setdefault(i,[])
+    docvec.setdefault(i, [])
     for j in range(len(vector)):
         docvec[i].append(0)
-print("Length of vector is: ",len(vector))
+print("Length of vector is: ", len(vector))
 for i in range(448):
-    loc=0
+    loc = 0
     for j in vector:
-        docvec[i][loc]=index[j]["TF*IDF"][i]
-        loc+=1
+        docvec[i][loc] = index[j]["TF*IDF"][i]
+        loc += 1
+
+print(calrank(docvec,queryvec))
