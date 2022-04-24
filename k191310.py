@@ -9,6 +9,7 @@
 from multiprocessing.sharedctypes import Value
 import os
 from this import s
+import tkinter
 from keras.preprocessing.text import text_to_word_sequence
 from nltk.stem import WordNetLemmatizer
 import string
@@ -16,7 +17,8 @@ import numpy as np
 import json
 from os.path import exists
 from nltk.stem.porter import *
-
+from tkinter import *
+ 
 # create tokens and remove stop words and lemmatize
 
 
@@ -112,21 +114,21 @@ def Mag(vec):  # this is a utility function to calculate magnitude and return
     return mag
 
 
-def dotproduct(vec1, vec2):
+def dotproduct(vec1, vec2):#numpy for dot product
     temp1 = np.array(vec1)
     temp2 = np.array(vec2)
     dotp = np.dot(temp1, temp2)
     return dotp
 
 
-def calrank(dv, qv):
+def calrank(dv, qv):#applyin cos similarity 
     rank = []
     mq = Mag(qv)
     md = 0
     if(mq != 0):
         for i in range(448):
             md = Mag(dv[i])
-            temp = ((dotproduct(dv[i], qv)) / (md*mq))
+            temp = ((dotproduct(dv[i], qv)) / (md*mq))#cos(d.q)/|d|.|q|
             if(temp >= 0.05):#there is a ambiguity in this gold querry doc says to put 0.001 and assignment document says to sset 0.05
                 rank.append(i+1)
     else:
@@ -165,13 +167,32 @@ with open("index.json", "r") as read_file:
 print(index)
 
 
-f = open("Stopword-List.txt", 'r')
+f = open("Stopword-List.txt", 'r')#reading stop word in advance as it will help
 if(f):
     temp = (f.read())
     f.close()
     stopwords = text_to_word_sequence(temp)
     del temp
 
+root = Tk()#Gui
+root.geometry("300x300")
+root.title(" TF*IDF ")
+def get_input():
+    query = inputtxt.get("1.0", "end-1c")
+    print(query)
+    print("Close the window ")    
+l = Label(text = "Do you want to start?: ")
+entry = tkinter.Entry()
+
+inputtxt = Text(root, height = 9,width = 24,bg = "light yellow")
+Display = Button(root, height = 2,width = 20,text ="Enter",command = lambda:get_input())
+l.pack()
+entry.pack()
+Display.pack()
+query=entry.get()
+root.mainloop()
+
+print (query)
 query = input("Enter Query: ")
 vector = list(index.keys())
 queryindex = {}
@@ -179,7 +200,7 @@ queryvec = []
 for i in range(len(vector)):
     queryvec.append(0)
 
-for i in (vector):
+for i in (vector):#initalizing query vector 
     queryindex.setdefault(i, {})
     queryindex[i].setdefault("TF", 0)
     queryindex[i].setdefault("TF*IDF", 0)
