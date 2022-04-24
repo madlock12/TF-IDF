@@ -15,6 +15,7 @@ import string
 import numpy as np
 import json
 from os.path import exists
+from nltk.stem.porter import *
 
 # create tokens and remove stop words and lemmatize
 
@@ -22,19 +23,22 @@ from os.path import exists
 # ____________________________use re____________________________
 def tokenize_remove_stopwords(data, stopwords):
     for character in string.punctuation:
-        data.replace(character, '')
-        data.replace("'", '')
-        data.replace("/", '')
-        data.replace("\\", '')
+        data=data.replace(character, ' ')
+        
 
     retreaved = text_to_word_sequence(data)  # tokenize text file
     for i in range(len(stopwords)):
         if(stopwords[i] in retreaved):  # if specific stopwords is in token
             retreaved.remove(stopwords[i])  # removing stop words
-    lemmatizer = WordNetLemmatizer()
-    for i in range(len(retreaved)):
-        retreaved[i] = lemmatizer.lemmatize(retreaved[i])
-    return retreaved
+
+    # Remove comments to apply lemmatizer i am using porter stemmer as it produces better matches for goldquery
+    # lemmatizer = WordNetLemmatizer()
+    # for i in range(len(retreaved)):
+    #     retreaved[i] = lemmatizer.lemmatize(retreaved[i])
+
+    stemmer = PorterStemmer()
+    retreavedd = [stemmer.stem(ret) for ret in retreaved]
+    return retreavedd
 
 
 def populate_index(vector, stopwords):
@@ -123,13 +127,14 @@ def calrank(dv, qv):
         for i in range(448):
             md = Mag(dv[i])
             temp = ((dotproduct(dv[i], qv)) / (md*mq))
-            if(temp>=0.05):
+            if(temp >= 0.05):#there is a ambiguity in this gold querry doc says to put 0.001 and assignment document says to sset 0.05
                 rank.append(i+1)
     else:
         print("No such term exist!!!")
-    
+
     rank.sort(reverse=True)
     return rank
+
 
 file = exists("index.json")
 if(file):  # if file exist
@@ -180,18 +185,15 @@ for i in (vector):
     queryindex[i].setdefault("TF*IDF", 0)
 
 query = tokenize_remove_stopwords(query, stopwords)
-
 for i in query:
     queryindex[i]["TF"] += 1  # this will calculate query term freq
 
 for i in query:
     # this will create a basic vector on which we will apply cos similarity
     queryindex[i]["TF*IDF"] = queryindex[i]["TF"]*index[i]["IDF"]
-# print(queryindex)
 
 for i in query:
     queryvec[vector.index(i)] = queryindex[i]["TF*IDF"]
-# print(queryvec)
 
 # make a vector for each document now
 docvec = {}
@@ -199,11 +201,11 @@ for i in range(448):
     docvec.setdefault(i, [])
     for j in range(len(vector)):
         docvec[i].append(0)
-print("Length of vector is: ", len(vector))
+
 for i in range(448):
     loc = 0
     for j in vector:
         docvec[i][loc] = index[j]["TF*IDF"][i]
         loc += 1
 
-print(calrank(docvec,queryvec))
+print(calrank(docvec, queryvec))
