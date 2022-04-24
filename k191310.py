@@ -12,11 +12,14 @@ from keras.preprocessing.text import text_to_word_sequence
 from nltk.stem import WordNetLemmatizer
 import string
 import numpy as np
-
+import json
+from os.path import exists
 # create tokens and remove stop words and lemmatize
-def tokenize_remove_stopwords(data, stopwords):
+
+
+def tokenize_remove_stopwords(data, stopwords): #____________________________use re____________________________
     for character in string.punctuation:
-        data.replace(character, " ")
+        data.replace(character, '')
 
     retreaved = text_to_word_sequence(data)  # tokenize text file
     for i in range(len(stopwords)):
@@ -56,25 +59,23 @@ def populate_index(vector, stopwords):
 
     DF = 0
     for i in vector:
-        for docno in range(448): #counting document freq and IDF
+        for docno in range(448):  # counting document freq and IDF
             if(index[i]["TF"][docno] != 0):
                 DF += 1
         index[i]["DocumentFreq"] = DF
-        DF=0
-        index[i]["IDF"] = np.log10(448/index[i]["DocumentFreq"])  # log(df/N)
-        
-        for docno in range(448):#calculating TF*IDF simultaionsly to reduce running cost
+        DF = 0
+        index[i]["IDF"] = np.log10(index[i]["DocumentFreq"])/448  # log(df/N)
+
+        for docno in range(448):  # calculating TF*IDF simultaionsly to reduce running cost
             if(index[i]["TF"][docno] != 0):
-                index[i]["TF*IDF"][docno]=index[i]["TF"][docno]*index[i]["IDF"]
+                index[i]["TF*IDF"][docno] = index[i]["TF"][docno]*index[i]["IDF"]
             else:
-                index[i]["TF*IDF"][docno]=0
-    
-    
-    print(index)
+                index[i]["TF*IDF"][docno] = 0
+
     return (index)
 
 
-def newfile(stopwords):  # this function will create index and store it in the index.txt file
+def newfile(stopwords):  # this function will create index and store it in the index.json file
     vector = []
     for docno in range(1, 449):
         ff = open("./Abstracts/Abstracts/"+str(docno) +
@@ -86,19 +87,20 @@ def newfile(stopwords):  # this function will create index and store it in the i
             retreaved = tokenize_remove_stopwords(data, stopwords)
             for i in retreaved:
                 if(i not in vector):
-                    vector.append(i)
-    print(vector)
-    print(len(vector))
+                    vector.append(i)    
+
+    print("Number of unique terms: ",len(vector))
     index = populate_index(vector, stopwords)
-    # f = open("index.txt", "w")#here we will store all indexes
 
-    # f.close()
+    with open('index.json', 'w') as cf:
+        json.dump(index,cf,indent=4)
 
 
-file = open("index.txt", "r")
+file = exists("index.json")
 if(file):  # if file exist
-    filesize = os.path.getsize("index.txt")
+    filesize = os.path.getsize("index.json")
     if(filesize == 0):  # file is empty hence we have to create index and store
+        print("Empty File")
         f = open("Stopword-List.txt", 'r')
         if(f):
             temp = (f.read())
@@ -113,10 +115,14 @@ else:  # if file does not exist
         temp = (f.read())
         f.close()
         stopwords = text_to_word_sequence(temp)
+        del temp
     else:
         print("Stop Word file does not exist")
     newfile(stopwords)
 
-f = open("index.txt", "r")
-if(f):
-    index = (f.read())
+with open("index.json", "r") as read_file:
+    index = json.load(read_file)
+print(index)
+
+query=input("Enter Query: ")
+queryvec=[]
